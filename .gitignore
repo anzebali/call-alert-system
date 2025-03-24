@@ -1,0 +1,39 @@
+# Ignore system and writable files
+vendor/
+writable/*
+!writable/index.html
+!writable/.htaccess
+
+# Ignore environment-specific settings
+.env
+.env.*
+
+# Ignore logs and cache
+writable/logs/*
+writable/cache/*
+writable/debugbar/*
+
+# Ignore session files
+writable/session/*
+
+# Ignore IDE/editor configuration files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore Composer dependencies (optional if using `composer install`)
+composer.lock
+
+# Ignore PHPUnit test results
+phpunit.xml
+phpunit.xml.dist
+
+# Ignore Node.js files if using frontend dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
