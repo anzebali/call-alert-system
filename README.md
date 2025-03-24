@@ -27,4 +27,8 @@ TWILIO_PHONE_NUMBER= twilio phone number
 
 create a crone to run with URL "yourbaseurl/twilio/call"
 
+3. databse file
+
+you can find the databse file in db folder on the root directory named "call_alert_system"
+
 
