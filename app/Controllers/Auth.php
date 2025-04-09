@@ -15,6 +15,8 @@ class Auth extends Controller
         $client->setClientId(getenv('GOOGLE_CLIENT_ID'));
         $client->setClientSecret(getenv('GOOGLE_CLIENT_SECRET'));
         $client->setRedirectUri(getenv('GOOGLE_REDIRECT_URI'));
+        $client->setAccessType('offline');
+        $client->setPrompt('consent');
         $client->addScope(['email', 'profile', 'https://www.googleapis.com/auth/calendar.readonly']);
 
 
@@ -23,6 +25,7 @@ class Auth extends Controller
 
     public function callback()
     {
+        $db = \Config\Database::connect();
         $client = new Client();
         $client->setClientId(getenv('GOOGLE_CLIENT_ID'));
         $client->setClientSecret(getenv('GOOGLE_CLIENT_SECRET'));
@@ -30,6 +33,8 @@ class Auth extends Controller
     
         if ($this->request->getVar('code')) {
             $token = $client->fetchAccessTokenWithAuthCode($this->request->getVar('code'));
+
+            //print_r($token['access_token']); die;
         
             if (!$token || isset($token['error'])) {
                 echo "Failed to get access token!";
@@ -51,6 +56,8 @@ class Auth extends Controller
 
             $userData = $userModel->where('google_id', $userInfo->id)->first();
 
+            
+            //print_r($userData); die;
 
             if(!empty($userData))
             {
@@ -58,9 +65,10 @@ class Auth extends Controller
                     'api_token' => $apiToken,
                     'access_token' => $token['access_token']
                 ];
-
                 $id = $userData['id'];
-                $userModel->update($userInfo->id, $a);
+                $qr = $db->table('users');
+                $qr->where('id', $id);
+                $qr->update($a);
             }
             else
             {
@@ -85,6 +93,80 @@ class Auth extends Controller
             return redirect()->to('/dashboard');
         }
     }
+
+//     public function callback()
+// {
+//     $client = new Client();
+//     $client->setClientId(getenv('GOOGLE_CLIENT_ID'));
+//     $client->setClientSecret(getenv('GOOGLE_CLIENT_SECRET'));
+//     $client->setRedirectUri(getenv('GOOGLE_REDIRECT_URI'));
+
+//     // ✅ Must be repeated here too
+//     $client->setAccessType('offline');
+//     $client->setPrompt('consent');
+
+//     $client->addScope([
+//         'https://www.googleapis.com/auth/userinfo.email',
+//         'https://www.googleapis.com/auth/userinfo.profile',
+//         'https://www.googleapis.com/auth/calendar.readonly',
+//         'openid'
+//     ]);
+
+//     // Continue with the rest of your code...
+//     if ($this->request->getVar('code')) {
+//         $authCode = $this->request->getVar('code');
+
+//         $token = $client->fetchAccessTokenWithAuthCode($authCode);
+
+//         if (!$token || isset($token['error'])) {
+//             echo "Failed to get access token!";
+//             log_message('error', 'Google OAuth error: ' . json_encode($token));
+//             exit;
+//         }
+
+//         $client->setAccessToken($token);
+
+//         $oauth2 = new Oauth2($client);
+//         $userInfo = $oauth2->userinfo->get();
+
+//         $userModel = new UserModel();
+//         $apiToken = bin2hex(random_bytes(32));
+
+//         $userDataArray = [
+//             'google_id'     => $userInfo->id,
+//             'name'          => $userInfo->name,
+//             'email'         => $userInfo->email,
+//             'api_token'     => $apiToken,
+//             'access_token'  => json_encode($token),
+//         ];
+
+//         if (isset($token['refresh_token'])) {
+//             $userDataArray['refresh_token'] = $token['refresh_token'];
+//         }
+
+//         $existingUser = $userModel->where('google_id', $userInfo->id)->first();
+//         if ($existingUser) {
+//             $userModel->update($existingUser['id'], $userDataArray);
+//             $userId = $existingUser['id'];
+//         } else {
+//             $userModel->insert($userDataArray);
+//             $userId = $userModel->getInsertID();
+//         }
+
+//         session()->set('user', [
+//             'userId' => $userId,
+//             'id'     => $userInfo->id,
+//             'name'   => $userInfo->name,
+//             'email'  => $userInfo->email,
+//             'token'  => $apiToken,
+//         ]);
+
+//         return redirect()->to('/dashboard');
+//     }
+// }
+
+    
+
     
 
     public function logout()
